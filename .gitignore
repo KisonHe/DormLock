@@ -12,6 +12,8 @@
 *-cache.lib
 *.sch-bak
 fp-info-cache
+PCBPlots*
+
 
 
 
