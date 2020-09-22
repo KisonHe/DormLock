@@ -239,9 +239,9 @@ Text Label 1400 850  0    50   ~ 0
 STM_SWCLK
 Text Label 1400 950  0    50   ~ 0
 STM_SWDIO
-Text Label 3400 4200 0    50   ~ 0
-STM_SWCLK
 Text Label 3400 4300 0    50   ~ 0
+STM_SWCLK
+Text Label 3400 4200 0    50   ~ 0
 STM_SWDIO
 Connection ~ 2900 4600
 Connection ~ 2800 4600

@@ -58,8 +58,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BATTERY_AD_Pin GPIO_PIN_0
-#define BATTERY_AD_GPIO_Port GPIOA
 #define SCREEN_CS_Pin GPIO_PIN_4
 #define SCREEN_CS_GPIO_Port GPIOA
 #define IPS_DC_Pin GPIO_PIN_0
