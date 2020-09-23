@@ -12,9 +12,11 @@
  */
 
 
-/* Includes ------------------------------------------------------------------*/	
+/* Includes ------------------------------------------------------------------*/
+#include <adc.h>
+#include <bsp_unlock.h>
 #include "task_main.h"
-
+#include "main.h"
 /* Private typedef -----------------------------------------------------------*/
 
 
@@ -25,15 +27,19 @@
 
 /* Private variables ---------------------------------------------------------*/
 TaskHandle_t Main_Task_Handle = nullptr; /*系统状态任务句柄*/
-
+TimerHandle_t adcBatteryCallLockDelayTimer = nullptr;
 /* Private function prototypes -----------------------------------------------*/
 
+static void adcBatteryHook(TimerHandle_t xTimer){
+
+}
 
 
-void Main_Task(void *pvParameters)
+[[noreturn]] void Main_Task(void *pvParameters)
 {
-
-	
+    bsp_unlock_init();
+    adcBatteryCallLockDelayTimer = xTimerCreate("adcBatteryCallLockDelayTimer", pdMS_TO_TICKS(60000), true, nullptr,adcBatteryHook);
+	//HAL_ADC_Start(&hadc);
 	for(;;)
 	{
 
@@ -41,4 +47,5 @@ void Main_Task(void *pvParameters)
 	  
 	}
 }
+
 

@@ -425,9 +425,9 @@ Text Label 3400 3800 0    50   ~ 0
 UART_32TX
 Text Label 3400 3900 0    50   ~ 0
 UART_32RX
-Text Label 4750 4700 2    50   ~ 0
-UART_32TX
 Text Label 4750 4600 2    50   ~ 0
+UART_32TX
+Text Label 4750 4700 2    50   ~ 0
 UART_32RX
 Text Label 4750 3600 2    50   ~ 0
 STMSYS_WAKEUP2

@@ -12,12 +12,12 @@
 #include "bsp_unlock.h"
 
 #define FRAME_HEAD 0xAF
-#define FRAME_END 0xEF
+#define FRAME_END 0xFF
 
-#define FW_OPENDOOR 0x01
-#define SFW_OPENDOOR_1 0x00
+#define FW_OPENDOOR (0x01)
+#define SFW_OPENDOOR_1 (0x00)
 
-static uint8_t NodeMcuUART_Rxbuffer[BSP_NODEMCU_BUFFER_SIZE] = {0}; //串口接收数据缓存数组，现在缓冲区可以连续接收三帧的数据
+uint8_t NodeMcuUART_Rxbuffer[BSP_NODEMCU_BUFFER_SIZE] = {0}; //串口接收数据缓存数组，现在缓冲区可以连续接收三帧的数据
 
 static int fw_opendoor_handle(uint8_t sfw);
 static int bsp_nodemcu_Analysis();
@@ -31,7 +31,7 @@ void bsp_modemcu_Init()
 {
 	__HAL_UART_CLEAR_IDLEFLAG(&BSP_NODEMCU_UART);												  //清除空闲中断位
 	__HAL_UART_ENABLE_IT(&BSP_NODEMCU_UART, UART_IT_IDLE);										  //使能DMA接收空闲中断
-	HAL_UART_Receive_DMA(&BSP_NODEMCU_UART, (uint8_t *)NodeMcuUART_Rxbuffer, BSP_NODEMCU_BUFFER_SIZE); //开始DMA接收
+	HAL_UART_Receive_DMA(&BSP_NODEMCU_UART, NodeMcuUART_Rxbuffer, BSP_NODEMCU_BUFFER_SIZE); //开始DMA接收
 }
 
 /**
@@ -48,13 +48,13 @@ void bsp_modemcu_It()
         bsp_nodemcu_Analysis();
 		//memset(NodeMcuUART_Rxbuffer, 0, BSP_NODEMCU_BUFFER_SIZE);										  //解析完成，数据清0
 		__HAL_UART_CLEAR_IDLEFLAG(&BSP_NODEMCU_UART);												  //清除空闲中断标志位
-		HAL_UART_Receive_DMA(&BSP_NODEMCU_UART, (uint8_t *)NodeMcuUART_Rxbuffer, BSP_NODEMCU_BUFFER_SIZE); //重新开启DMA接收传输
+		HAL_UART_Receive_DMA(&BSP_NODEMCU_UART, NodeMcuUART_Rxbuffer, BSP_NODEMCU_BUFFER_SIZE); //重新开启DMA接收传输
 	}
 }
 
 static int bsp_nodemcu_Analysis()
 {
-	if (NodeMcuUART_Rxbuffer[0] == FRAME_HEAD && NodeMcuUART_Rxbuffer[20] == FRAME_END )
+	if ((NodeMcuUART_Rxbuffer[0] == FRAME_HEAD) && (NodeMcuUART_Rxbuffer[20] == FRAME_END ))
 	{
 		uint8_t tmp_sum = 0;
 		//帧头帧尾对了，检测一次和校验

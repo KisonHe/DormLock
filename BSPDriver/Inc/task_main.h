@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 extern TaskHandle_t Main_Task_Handle; /*系统状态任务句柄*/
-void Main_Task(void *pvParameters);
+[[noreturn]] void Main_Task(void *pvParameters);
 
 #ifdef __cplusplus
 }
