@@ -46,6 +46,22 @@ int sendMessage2_32(uint8_t FW,uint8_t SFW, uint8_t* data);
 //===============================================================
 // This routine is executed when you open its IP in browser
 //===============================================================
+void handleCP(){
+    String cp = server.arg("cp");
+    JSONVar myObject = JSON.parse(cp);
+
+    if (authCheck(myObject) == 200){
+        //change password on flash
+        //temperary reply
+        server.send(500, "text/html", "method not supported");
+    }
+    else{
+        server.send(403, "text/html", "failed the auth");
+    }
+
+}
+
+
 void handleRoot()
 {
   //String s = MAIN_page; //Read HTML contents
@@ -101,7 +117,8 @@ void setup(void)
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP()); //IP address assigned to your ESP
 
-  server.on("/", handleRoot); //Which routine to handle at root location
+    server.on("/", handleRoot); //Which routine to handle at root location
+    server.on("/changepassword", handleCP); //Which routine to handle at root location
 
   server.begin(); //Start server
   Serial.println("HTTP server started");
@@ -136,6 +153,7 @@ int authCheck(JSONVar obj)
   if (JSON.typeof(obj) == "undefined")
   {
     Serial.println("Parsing input failed!");
+    return -1;
   }
   else if (obj.hasOwnProperty("verifyCode"))
   {

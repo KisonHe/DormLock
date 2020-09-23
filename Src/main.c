@@ -18,6 +18,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <bsp_unlock.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "dma.h"
@@ -101,17 +102,23 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
+  //MX_FREERTOS_Init();
   /* Start scheduler */
-  osKernelStart();
+  //osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
+  //bsp_unlock_init();
+    //HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
+    //HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_SET);
+    //HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_RESET);
+    //__HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, 500);
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

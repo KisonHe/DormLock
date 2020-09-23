@@ -40,7 +40,7 @@ void bsp_unlock_init(){
 
     HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
     HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_RESET);
-    __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_4, CLOSE_POS);
+    __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, CLOSE_POS);
 
 }
 
