@@ -18,7 +18,6 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <bsp_nodemcuuart.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
@@ -50,7 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+int _debug = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,9 +103,9 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  //MX_FREERTOS_Init();
+  MX_FREERTOS_Init();
   /* Start scheduler */
-  //osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -114,14 +113,14 @@ int main(void)
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
   //bsp_unlock_init();
-    //HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
-    //HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_SET);
+    HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
+    HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_SET);
     //HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_RESET);
     //__HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, 500);
-    bsp_modemcu_Init();
+    //bsp_modemcu_Init();
   while (1)
   {
-
+      __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, _debug);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -182,7 +181,7 @@ void SystemClock_Config(void)
 
 /**
   * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM6 interrupt took place, inside
+  * @note   This function is called  when TIM17 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
   * a global variable "uwTick" used as application time base.
   * @param  htim : TIM handle
@@ -193,7 +192,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM6) {
+  if (htim->Instance == TIM17) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */

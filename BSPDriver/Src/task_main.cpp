@@ -28,6 +28,7 @@
 /* Private variables ---------------------------------------------------------*/
 TaskHandle_t Main_Task_Handle = nullptr; /*系统状态任务句柄*/
 TimerHandle_t adcBatteryCallLockDelayTimer = nullptr;
+uint16_t ADC_raw = 0;
 /* Private function prototypes -----------------------------------------------*/
 
 static void adcBatteryHook(TimerHandle_t xTimer){
@@ -35,15 +36,16 @@ static void adcBatteryHook(TimerHandle_t xTimer){
 }
 
 
-[[noreturn]] void Main_Task(void *pvParameters)
+void Main_Task(void *pvParameters)
 {
     bsp_unlock_init();
     adcBatteryCallLockDelayTimer = xTimerCreate("adcBatteryCallLockDelayTimer", pdMS_TO_TICKS(60000), true, nullptr,adcBatteryHook);
-	//HAL_ADC_Start(&hadc);
+	HAL_ADC_Start(&hadc);
 	for(;;)
 	{
-
-	    osDelay(1);
+        //HAL_ADC_PollForConversion(&hadc, HAL_MAX_DELAY);
+        //ADC_raw = HAL_ADC_GetValue(&hadc);
+	    osDelay(10);
 	  
 	}
 }

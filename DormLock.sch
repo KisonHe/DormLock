@@ -534,7 +534,7 @@ F 3 "" H 4200 2200 50  0001 C CNN
 	1    4200 2200
 	0    1    1    0   
 $EndComp
-Text Label 4200 2000 2    50   ~ 0
+Text Label 4050 2000 2    50   ~ 0
 STEER_PWM
 $Comp
 L Connector_Generic:Conn_01x03 J4
@@ -1039,7 +1039,7 @@ F 3 "~" H 1600 2000 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	1750 2000 2100 2000
-Text Label 1000 5600 2    50   ~ 0
+Text Label 900  5600 2    50   ~ 0
 STEER_EN
 $Comp
 L Device:R R9
@@ -1175,8 +1175,6 @@ F 3 "~" H 1300 5750 50  0001 C CNN
 	1    1300 5750
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	1300 5600 1600 5600
 Connection ~ 1300 5600
 $Comp
 L power:GND #PWR0113
@@ -1551,4 +1549,46 @@ F 3 "~" H 9750 5250 50  0001 C CNN
 	1    9750 5250
 	-1   0    0    1   
 $EndComp
+$Comp
+L Device:R R20
+U 1 1 5F7ADBF5
+P 950 5450
+F 0 "R20" H 1020 5496 50  0000 L CNN
+F 1 "0" H 1020 5405 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" V 880 5450 50  0001 C CNN
+F 3 "~" H 950 5450 50  0001 C CNN
+	1    950  5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	900  5600 950  5600
+Wire Wire Line
+	1300 5600 1600 5600
+Wire Wire Line
+	950  5600 1000 5600
+Connection ~ 950  5600
+Text Label 950  5300 0    50   ~ 0
+STEER_EN_8266
+Text Label 4750 4500 2    50   ~ 0
+STEER_EN_8266
+$Comp
+L Device:R R21
+U 1 1 5F7C7CE7
+P 4100 1850
+F 0 "R21" H 4170 1896 50  0000 L CNN
+F 1 "0" H 4170 1805 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" V 4030 1850 50  0001 C CNN
+F 3 "~" H 4100 1850 50  0001 C CNN
+	1    4100 1850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4050 2000 4100 2000
+Connection ~ 4100 2000
+Wire Wire Line
+	4100 2000 4200 2000
+Text Label 4100 1700 0    50   ~ 0
+STEER_PWM_8266
+Text Label 4750 4400 2    50   ~ 0
+STEER_PWM_8266
 $EndSCHEMATC

@@ -151,6 +151,8 @@ void setup(void)
 //==============================================================
 void loop(void)
 {
+    //delay(1000);
+    //Serial.print("asdfasdfasdf");
     server.handleClient(); //Handle client requests
 }
 
@@ -274,8 +276,8 @@ int K_readInfoFromFile(){
         for(int i = 0;i<f.size();i++){
             tmp += (char)f.read();
         }
-        Serial.print("read string in info of ");
-        Serial.println(tmp);
+        //Serial.print("read string in info of ");
+        //Serial.println(tmp);
         
         TotalNumofUser = tmp.toInt();
         if (TotalNumofUser == 0){
@@ -297,17 +299,17 @@ int K_LittleFSinit()
 {
     if (LittleFS.begin())
     {
-        Serial.println("LittleFS Initialize....ok");
+        //Serial.println("LittleFS Initialize....ok");
         if (!LittleFS.exists("/info"))
         {
-            Serial.println("File not fount");
+            //Serial.println("File not fount");
             if (LittleFS.format())
             {
-                Serial.println("File System Formated");
+                //Serial.println("File System Formated");
                 File f = LittleFS.open("/info", "w");
                 if (!f)
                 {
-                    Serial.println("File create failed");
+                    //Serial.println("File create failed");
                     return -1;
                 }
                 else
@@ -319,7 +321,7 @@ int K_LittleFSinit()
                     f.close(); //Close file
                     if (LittleFS.exists("/info"))
                     {
-                        Serial.println("File create success");
+                        //Serial.println("File create success");
                         
                         return 1;
                     }
@@ -327,19 +329,19 @@ int K_LittleFSinit()
             }
             else
             {
-                Serial.println("File System Formatting Error");
+                //Serial.println("File System Formatting Error");
                 return -1;
             }
         }
         else
         {
-            Serial.println("File found");
+            //Serial.println("File found");
             return 0;
         }
     }
     else
     {
-        Serial.println("LittleFS Initialization...failed");
+        //Serial.println("LittleFS Initialization...failed");
         return -1;
     }
     return -1;
