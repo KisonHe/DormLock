@@ -16,44 +16,62 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include "LittleFS.h"
+#include <arduino-timer.h>
+
 
 #define FW_OPENDOOR (0x01)
 #define SFW_OPENDOOR_1 (0x00)
 
-#define DORM
+#define FW_ASKHEARTBEAT (0x00)
+#define SFW_ASKHEARTBEAT_REQUEST (0x00)
+#define SFW_ASKHEARTBEAT_REPLY (0x01)
+
+
+
+
+// Configures Below
+
 //SSID and Password of your WiFi router
-#ifdef DORM
 const char *ssid = "505";
 char *password = "Nopassword~";
-#else
-const char *ssid = "Kison";
-const char *password = "azxcvbnm";
-#endif
+
 
 //change into newing a mem, cause in final ver we should be able to
 //do anything from adminside of app
 int TotalNumofUser = 4; //future admin included
-
 String userNames[4] = {"KisonHe", "wsx", "zby", "hjj"};
 String userPasswords[4] = {"azxcvbnm", "123", "123", "123"};
-String verifyCode;
-const long utcOffsetInSeconds = 3600;
-ESP8266WebServer server(80); //Server on port 80
 
+
+//NTP Server Config
+const long utcOffsetInSeconds = 3600;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "ntp1.aliyun.com", utcOffsetInSeconds);
 
+
+// Set your Static IP address
+IPAddress local_IP(192, 168, 1, 6);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress primaryDNS(114, 114, 114, 114);   //optional
+IPAddress secondaryDNS(8, 8, 4, 4); //optional
+
+
+String reply_ = "auth passed ";
+String verifyCode;
 int Hour = 0;
 int Minutes = 0;
+int batteryLevel = -1; //can be only -1,0,25,50,75,100
 
+
+//Timer<2,micros> scheduleTimer;
+bool heartBeatAsker(void *); 
+ESP8266WebServer server(80); //Server on port 80
+char from32Message[22];
 void ntpOnly(void);
-
 int authCheck(JSONVar obj);
-
 int sendMessage2_32(uint8_t FW, uint8_t SFW, uint8_t *data);
-
 int K_LittleFSinit();
-
 int K_readInfoFromFile();
 //===============================================================
 // This routine is executed when you open its IP in browser
@@ -87,7 +105,8 @@ void handleRoot()
     {
     case 200:
         /* code */
-        server.send(200, "text/html", "auth passed");
+        reply_ = "auth passed " + String(batteryLevel);
+        server.send(200, "text/html", reply_);
         sendMessage2_32(FW_OPENDOOR, SFW_OPENDOOR_1, to32Data);
         break;
 
@@ -107,16 +126,68 @@ void handleRoot()
     }
     //Serial.println(info);
 }
-//===============================================================
-// This routine is executed when you press submit
-//===============================================================
+
+bool checkLegitimacy(char buffer[]){
+    if (buffer[0] == 0xAF && buffer[20] == 0xFF){
+    uint8_t tmp_sum = 0;
+    for (int i = 1; i < 19; i++){
+        tmp_sum += buffer[i];
+    }
+    if (tmp_sum == buffer[19]){
+        return true;
+    }else{
+        return false;
+    }
+    }else{
+        return false;
+    }
+    
+}
+
+bool heartBeatAsker(void *){
+    //Serial.write("heartBeatAskering!\n");
+    uint8_t to32Data[16];
+    memset(to32Data, 0, sizeof(to32Data));
+    memset(from32Message,0,sizeof(from32Message));
+    sendMessage2_32(FW_ASKHEARTBEAT,SFW_ASKHEARTBEAT_REQUEST,to32Data);
+    int returnValue = 0;
+
+    returnValue = Serial.readBytes(from32Message,21);
+    // if (returnValue){
+    //     Serial.write("got chars!");
+    //     Serial.print(returnValue);
+    // }
+    if (checkLegitimacy(from32Message)){
+        if ((from32Message[1] == FW_ASKHEARTBEAT) && (from32Message[2] == SFW_ASKHEARTBEAT_REPLY)){
+            if (from32Message[3] == 0 || from32Message[3] == 25 || from32Message[3] == 50 || from32Message[3] == 75 || from32Message[3] == 100){
+                batteryLevel = from32Message[3];
+                // Serial.write("correct Message got!\n");
+                // Serial.print(batteryLevel);
+                //Serial.flush();
+            }
+        }
+    }
+    // else
+    // {
+    //     Serial.print("head or tail incorrect");
+    // }
+    
+    return true;
+}
 
 void setup(void)
 {
+    memset(from32Message,0,sizeof(from32Message));
+    Serial.setTimeout(1000);    //set timeout 1000ms
     Serial.begin(115200);
 
     WiFi.begin(ssid, password); //Connect to your WiFi router
     Serial.println("");
+
+      // Configures static IP address
+    if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+        Serial.println("STA Failed to configure");
+    }
 
     // Wait for connection
     while (WiFi.status() != WL_CONNECTED)
@@ -144,6 +215,31 @@ void setup(void)
         Serial.println("FS is fucked");
     }
     K_readInfoFromFile();
+//    scheduleTimer.every(8000,heartBeatAsker);
+}
+
+int KEZTimer(){
+    #define numofTasks (1)
+    static int intervals[numofTasks] = {300000};
+    static unsigned long lastCalls[numofTasks] = {0};
+    unsigned long nowMillis = 0;
+    for (int i = 0; i < numofTasks; i++)
+    {
+        nowMillis = millis();
+        if (nowMillis > (lastCalls[i] + intervals[i])){
+            //hook of task i
+            lastCalls[i] = nowMillis;
+            // Serial.print("nowMillis");
+            // Serial.print(nowMillis);
+            //only one task now so whatever
+            heartBeatAsker(nullptr);
+            
+        }
+    }
+    
+
+
+    #undef numofTasks
 }
 
 //==============================================================
@@ -153,6 +249,8 @@ void loop(void)
 {
     //delay(1000);
     //Serial.print("asdfasdfasdf");
+//    scheduleTimer.tick();
+    KEZTimer();
     server.handleClient(); //Handle client requests
 }
 
@@ -245,8 +343,6 @@ int authCheck(JSONVar obj)
 
 int sendMessage2_32(uint8_t FW, uint8_t SFW, uint8_t *data)
 {
-    //static uint8_t Message[21];
-    //static char Message[21];
     static char Message[22];
     uint8_t tmp_sum = 0;
     memset(Message, 0, sizeof(Message));
@@ -262,9 +358,6 @@ int sendMessage2_32(uint8_t FW, uint8_t SFW, uint8_t *data)
 
     Message[20] = 0xFF;
     Serial.write(Message, 22);
-    // for (int i = 0;i < 21;i++){
-    //   Serial.write(Message[i]);
-    // }
 }
 
 
