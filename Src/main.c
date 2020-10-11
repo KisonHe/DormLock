@@ -98,6 +98,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM3_Init();
   MX_ADC_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -116,11 +117,11 @@ int main(void)
     HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
     HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_SET);
     //HAL_GPIO_WritePin(STEER_EN_GPIO_Port,STEER_EN_Pin,GPIO_PIN_RESET);
-    //__HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, 500);
+    __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, 500);
     //bsp_modemcu_Init();
   while (1)
   {
-      __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, _debug);
+      //__HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, _debug);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

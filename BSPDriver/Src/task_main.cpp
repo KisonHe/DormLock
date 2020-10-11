@@ -17,6 +17,7 @@
 #include <bsp_unlock.h>
 #include "task_main.h"
 #include "main.h"
+#include "bsp_rgb.h"
 /* Private typedef -----------------------------------------------------------*/
 
 
@@ -36,13 +37,32 @@ static void adcBatteryHook(TimerHandle_t xTimer){
 }
 
 
-void Main_Task(void *pvParameters)
+[[noreturn]] void Main_Task(void *pvParameters)
 {
+    int statusMachine = 0;
+    uint32_t lastSwTime = 1000;
     bsp_unlock_init();
+    bsp_rgb_init();
+    bsp_rgb_Request newRequest;
+    newRequest.Duration = 100;
+    newRequest.Type = (BSP_RGB_RE_CONSTANT<<8);
+    newRequest.Involved = 1<<2;
+    xQueueSend(bsp_rgb_RequestQueue,&newRequest,0);
     adcBatteryCallLockDelayTimer = xTimerCreate("adcBatteryCallLockDelayTimer", pdMS_TO_TICKS(60000), true, nullptr,adcBatteryHook);
 	HAL_ADC_Start(&hadc);
 	for(;;)
 	{
+	    if (HAL_GetTick() - lastSwTime > 3000 )
+        {
+            newRequest.Duration = 100;
+            newRequest.Type = (BSP_RGB_RE_CONSTANT<<8);
+            newRequest.Involved = 1<<statusMachine;
+            statusMachine++;statusMachine = statusMachine > 2 ? 0 :statusMachine;
+            xQueueSend(bsp_rgb_RequestQueue,&newRequest,0);
+            lastSwTime = HAL_GetTick();
+        }
+        //bsp_rgb_gradational();
+        bsp_rgb_handle();
         //HAL_ADC_PollForConversion(&hadc, HAL_MAX_DELAY);
         //ADC_raw = HAL_ADC_GetValue(&hadc);
 	    osDelay(10);

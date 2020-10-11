@@ -68,6 +68,14 @@ void Error_Handler(void);
 #define SCREEN_BRIGHTNESS_GPIO_Port GPIOB
 #define STEER_EN_Pin GPIO_PIN_12
 #define STEER_EN_GPIO_Port GPIOB
+#define RGB_B_Pin GPIO_PIN_8
+#define RGB_B_GPIO_Port GPIOA
+#define RGB_G_Pin GPIO_PIN_9
+#define RGB_G_GPIO_Port GPIOA
+#define RGB_R_Pin GPIO_PIN_10
+#define RGB_R_GPIO_Port GPIOA
+#define STEER_PWM_B_Pin GPIO_PIN_4
+#define STEER_PWM_B_GPIO_Port GPIOB
 #define STEER_PWM_Pin GPIO_PIN_8
 #define STEER_PWM_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
