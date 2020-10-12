@@ -1,35 +1,38 @@
 /** 
 * @brief    RGB灯板级支持包
 * @details  
-* @author   Asn
-* @date     2019.10.20
-* @version  1.0
-* @par Copyright (c):  Asn
-* @par 日志
+* @author   KisonHe
+* @date     2020.10.1
 */
 
 #include "bsp_rgb.h"
 #include "tim.h"
-#include <cstdlib>
 #include <cstring>
 
 #define RED_TIM &htim1               //红
-#define RED_CHANNEL TIM_CHANNEL_2
-#define RED_SET TIM1->CCR2
+#define RED_CHANNEL TIM_CHANNEL_3
+#define RED_SET TIM1->CCR3
 
 #define GREEN_TIM &htim1
 #define GREEN_CHANNEL TIM_CHANNEL_1  //绿
 #define GREEN_SET TIM1->CCR1
 
 #define BLUE_TIM &htim1
-#define BLUE_CHANNEL TIM_CHANNEL_3   //蓝
-#define BLUE_SET TIM1->CCR3
+#define BLUE_CHANNEL TIM_CHANNEL_2   //蓝
+#define BLUE_SET TIM1->CCR2
 
 static uint16_t gradational;//渐变爆闪专属
 static int16_t countDown = 0;
 
 
 #ifdef BSP_RGB_REQUEUE
+
+typedef struct bsp_rgb_RequestStruct_ {
+    int16_t Type;       //00000000 00000000 -->> High for main type, Low for sub type
+    uint8_t Involved;    //00000111 -->> RGB
+    int16_t Duration;   //times to repeat, -1 stands forever. 0 stands for operation done
+} bsp_rgb_RequestStruct;
+
 bsp_rgb_RequestStruct onGoing;
 QueueHandle_t bsp_rgb_RequestQueue = nullptr;
 #endif
@@ -51,11 +54,6 @@ void bsp_rgb_init(void) {
 
 #ifdef BSP_RGB_REQUEUE
 
-//typedef struct bsp_rgb_RequestStruct_ {
-//    int16_t Type;       //00000000 00000000 -->> High for main type, Low for sub type
-//    uint8_t Involved;    //00000111 -->> RGB
-//    int16_t Duration;   //times to repeat, -1 stands forever. 0 stands for operation done
-//} bsp_rgb_RequestStruct;
 
 /**
  * @brief Pack the request and send it to the queue
@@ -66,17 +64,24 @@ void bsp_rgb_init(void) {
  * @param Involved_ Involved RGBs
  * @param Duration_ How many times handle is called before expiring
  * @param Queue2Send_ Queue to send
- * @example bsp_rgb_Request(BSP_RGB_RE_CONSTANT, 0, BSP_RGB_Inv_R | BSP_RGB_Inv_G | BSP_RGB_Inv_B , 100, bsp_rgb_RequestQueue);
+ * @param isISR If this function is called from ISR or not. 0 for non-ISR
+ * @example bsp_rgb_Request(BSP_RGB_RE_CONSTANT, 0, BSP_RGB_Inv_R | BSP_RGB_Inv_G | BSP_RGB_Inv_B , 100, bsp_rgb_RequestQueue, 0);
  * @return 0 if success, -1 if fucked
  */
 
-int bsp_rgb_Request(int8_t Type_, int8_t SubType_, uint8_t Involved_, int16_t Duration_, QueueHandle_t Queue2Send_) {
+int bsp_rgb_Request(int8_t Type_, int8_t SubType_, uint8_t Involved_, int16_t Duration_, QueueHandle_t Queue2Send_,
+                    int8_t isISR) {
     bsp_rgb_RequestStruct newRequest;
     newRequest.Duration = Duration_;
     newRequest.Type = (int16_t) (Type_ << 8 + SubType_);
     newRequest.Involved = Involved_;
-    if (xQueueSend(bsp_rgb_RequestQueue, &newRequest, 0) == pdTRUE)
-        return 0;
+    if (isISR) {
+        if (xQueueSendFromISR(bsp_rgb_RequestQueue, &newRequest, 0) == pdTRUE)
+            return 0;
+    } else {
+        if (xQueueSend(bsp_rgb_RequestQueue, &newRequest, 0) == pdTRUE)
+            return 0;
+    }
     return -1;
 }
 

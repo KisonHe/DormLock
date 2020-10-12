@@ -9,12 +9,14 @@
 
 #include "task_main.h"
 #include "bsp_unlock.h"
+#include "bsp_rgb.h"
 
 #define FRAME_HEAD 0xAF
 #define FRAME_END 0xFF
 
 #define FW_OPENDOOR (0x01)
-#define SFW_OPENDOOR_1 (0x00)
+#define SFW_OPENDOOR_ASK (0x00)
+#define SFW_OPENDOOR_REPLY (0x00)
 
 #define FW_ASKHEARTBEAT (0x00)
 #define SFW_ASKHEARTBEAT_REQUEST (0x00)
@@ -83,7 +85,6 @@ static int bsp_nodemcu_Analysis() {
             default:
                 return 1;
         }
-        memset(NodeMcuUART_Rxbuffer, 0, sizeof(NodeMcuUART_Rxbuffer));
         return 0;
     }
     return -1;
@@ -96,6 +97,7 @@ static int fw_askheartbeat_handle(uint8_t sfw) {
             memset(data, 0, sizeof(data));
             memcpy(data, &Battery_Level, sizeof(Battery_Level));
             bsp_nodemcuuart_send(FW_ASKHEARTBEAT, SFW_ASKHEARTBEAT_REPLY, data);
+            bsp_rgb_Request(BSP_RGB_RE_CONSTANT,0,BSP_RGB_Inv_R,50,bsp_rgb_RequestQueue,1);
             return 0;
             break;
         default:
@@ -107,8 +109,15 @@ static int fw_askheartbeat_handle(uint8_t sfw) {
 
 static int fw_opendoor_handle(uint8_t sfw) {
     switch (sfw) {
-        case SFW_OPENDOOR_1:
+        case SFW_OPENDOOR_ASK:
             bsp_unlock();
+            uint8_t data[20];
+            uint32_t tick;
+            tick = HAL_GetTick();
+            memset(data, 0, sizeof(data));
+            memcpy(data, &tick, sizeof(tick));
+            bsp_nodemcuuart_send(FW_OPENDOOR, SFW_OPENDOOR_REPLY, data);
+            bsp_rgb_Request(BSP_RGB_RE_CONSTANT,0,BSP_RGB_Inv_B,100,bsp_rgb_RequestQueue,1);
             return 0;
             break;
         default:
@@ -131,5 +140,5 @@ int bsp_nodemcuuart_send(uint8_t FW, uint8_t SFW, uint8_t *data) {
     }
     Message[19] = tmp_sum;
     Message[20] = 0xFF;
-    HAL_UART_Transmit_DMA(&BSP_NODEMCU_UART, Message, 21);
+    return HAL_UART_Transmit_DMA(&BSP_NODEMCU_UART, Message, 21);
 }

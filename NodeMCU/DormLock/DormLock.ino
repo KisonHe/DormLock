@@ -215,6 +215,7 @@ void setup(void)
         Serial.println("FS is fucked");
     }
     K_readInfoFromFile();
+    heartBeatAsker(nullptr);
 //    scheduleTimer.every(8000,heartBeatAsker);
 }
 

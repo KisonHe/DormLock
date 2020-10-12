@@ -1,6 +1,6 @@
-//
-// Created by kisonhe on 2020/9/20.
-//
+/**
+ *
+ */
 #include "cmsis_os.h"
 #include "bsp_unlock.h"
 #include "tim.h"
@@ -11,6 +11,9 @@
 TimerHandle_t lockCutPowerDelayTimer = nullptr;
 TimerHandle_t unlockCallLockDelayTimer = nullptr;
 
+static uint8_t bsp_unlock_StatusLock = 0;
+static uint32_t bsp_unlock_StatusLockAcquireTime = 0;
+
 /**
  * @brief The function to be hooked to cut servo power, after the servo back to closed location for some time
  * @param xTimer
@@ -19,6 +22,7 @@ static void lockCutPowerHook(TimerHandle_t xTimer) {
     HAL_GPIO_WritePin(STEER_EN_GPIO_Port, STEER_EN_Pin, GPIO_PIN_RESET);
     xTimerStop(lockCutPowerDelayTimer, pdMS_TO_TICKS(500));
     xTimerStop(unlockCallLockDelayTimer, pdMS_TO_TICKS(500));
+    bsp_unlock_StatusLock = 0;
 }
 
 /**
@@ -53,11 +57,21 @@ void bsp_unlock_init() {
  * @return
  */
 int bsp_unlock() {
+    if (bsp_unlock_StatusLock) {
+        if (HAL_GetTick() - bsp_unlock_StatusLockAcquireTime > 60000){
+            bsp_unlock_StatusLock = 0;
+            return -1;
+        }
+        return 1;
+    }
+    bsp_unlock_StatusLock = 1; bsp_unlock_StatusLockAcquireTime = HAL_GetTick();
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     //function to open the door
     HAL_GPIO_WritePin(STEER_EN_GPIO_Port, STEER_EN_Pin, GPIO_PIN_SET);
     __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, OPEN_OPS);
     xTimerStartFromISR(unlockCallLockDelayTimer, &xHigherPriorityTaskWoken);
+    return 0;
+
 }
 
 
