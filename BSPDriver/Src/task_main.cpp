@@ -29,45 +29,48 @@
 /* Private variables ---------------------------------------------------------*/
 TaskHandle_t Main_Task_Handle = nullptr; /*系统状态任务句柄*/
 TimerHandle_t adcBatteryCallLockDelayTimer = nullptr;
+TimerHandle_t adcBatteryVoltageMonitor = nullptr;
 uint16_t ADC_raw = 0;
+uint16_t Battery_Level = 0; // can only be 100,75,50,25,0
+
+//todo set these values
+static uint16_t Battery100Threshold = 0;
+static uint16_t Battery75Threshold = 0;
+static uint16_t Battery50Threshold = 0;
+static uint16_t Battery25Threshold = 0;
+
 /* Private function prototypes -----------------------------------------------*/
 
-static void adcBatteryHook(TimerHandle_t xTimer){
+static void adcBatteryHook(TimerHandle_t xTimer) {
 
 }
 
 
-[[noreturn]] void Main_Task(void *pvParameters)
-{
-    int statusMachine = 0;
-    uint32_t lastSwTime = 1000;
+[[noreturn]] void Main_Task(void *pvParameters) {
     bsp_unlock_init();
+    HAL_ADC_PollForConversion(&hadc, 50);
+
+
     bsp_rgb_init();
-    bsp_rgb_Request newRequest;
-    newRequest.Duration = 100;
-    newRequest.Type = (BSP_RGB_RE_CONSTANT<<8);
-    newRequest.Involved = 1<<2;
-    xQueueSend(bsp_rgb_RequestQueue,&newRequest,0);
-    adcBatteryCallLockDelayTimer = xTimerCreate("adcBatteryCallLockDelayTimer", pdMS_TO_TICKS(60000), true, nullptr,adcBatteryHook);
-	HAL_ADC_Start(&hadc);
-	for(;;)
-	{
-	    if (HAL_GetTick() - lastSwTime > 3000 )
-        {
-            newRequest.Duration = 100;
-            newRequest.Type = (BSP_RGB_RE_CONSTANT<<8);
-            newRequest.Involved = 1<<statusMachine;
-            statusMachine++;statusMachine = statusMachine > 2 ? 0 :statusMachine;
-            xQueueSend(bsp_rgb_RequestQueue,&newRequest,0);
-            lastSwTime = HAL_GetTick();
-        }
-        //bsp_rgb_gradational();
+    adcBatteryCallLockDelayTimer = xTimerCreate("adcBatteryCallLockDelayTimer", pdMS_TO_TICKS(60000), true, nullptr,
+                                                adcBatteryHook);
+    adcBatteryVoltageMonitor = xTimerCreate("adcBatteryVoltageMonitor", pdMS_TO_TICKS(60000), true, nullptr, \
+    [](TimerHandle_t xTimer) {
+        HAL_ADC_PollForConversion(&hadc, 50);
+        if (HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc), HAL_ADC_STATE_REG_EOC)) ADC_raw = HAL_ADC_GetValue(&hadc);
+        Battery_Level =
+                ADC_raw > Battery100Threshold ? 100 : ADC_raw > Battery75Threshold ? 75 : ADC_raw > Battery50Threshold
+                                                                                          ? 50 : ADC_raw >
+                                                                                                 Battery25Threshold ? 25
+                                                                                                                    : 0;
+    });
+    HAL_ADC_Start(&hadc);
+    for (;;) {
         bsp_rgb_handle();
-        //HAL_ADC_PollForConversion(&hadc, HAL_MAX_DELAY);
-        //ADC_raw = HAL_ADC_GetValue(&hadc);
-	    osDelay(10);
-	  
-	}
+        osDelay(10);
+
+
+    }
 }
 
 

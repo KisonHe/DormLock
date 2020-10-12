@@ -18,6 +18,8 @@ extern "C" {
 extern TaskHandle_t Main_Task_Handle; /*系统状态任务句柄*/
 [[noreturn]] void Main_Task(void *pvParameters);
 
+extern uint16_t Battery_Level;
+
 #ifdef __cplusplus
 }
 #endif
