@@ -251,6 +251,12 @@ void loop(void)
     //delay(1000);
     //Serial.print("asdfasdfasdf");
 //    scheduleTimer.tick();
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        WiFi.reconnect();
+        delay(100);
+        Serial.print(".");
+    }
     KEZTimer();
     server.handleClient(); //Handle client requests
 }

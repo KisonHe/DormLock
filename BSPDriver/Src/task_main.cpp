@@ -38,6 +38,18 @@ static uint16_t Battery25Threshold = 700;
 
 /* Private function prototypes -----------------------------------------------*/
 
+//void adcTimerHook(TimerHandle_t xTimer) {
+//HAL_ADC_Start(&hadc);
+//HAL_ADC_PollForConversion(&hadc, 50);
+//if (HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc), HAL_ADC_STATE_REG_EOC)) ADC_raw = HAL_ADC_GetValue(&hadc);
+//Battery_Level =
+//ADC_raw > Battery100Threshold ? 100 : ADC_raw > Battery75Threshold ? 75 : ADC_raw > Battery50Threshold
+//                                                                          ? 50 : ADC_raw >
+//                                                                                 Battery25Threshold ? 25
+//                                                                                                    : 0;
+//HAL_ADC_Stop(&hadc);
+//}
+
 
 [[noreturn]] void Main_Task(void *pvParameters) {
     bsp_unlock_init();
@@ -45,6 +57,15 @@ static uint16_t Battery25Threshold = 700;
 
 
     bsp_rgb_init();
+    HAL_ADC_Start(&hadc);
+    HAL_ADC_PollForConversion(&hadc, 50);
+    if (HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc), HAL_ADC_STATE_REG_EOC)) ADC_raw = HAL_ADC_GetValue(&hadc);
+    Battery_Level =
+            ADC_raw > Battery100Threshold ? 100 : ADC_raw > Battery75Threshold ? 75 : ADC_raw > Battery50Threshold
+                                                                                      ? 50 : ADC_raw >
+                                                                                             Battery25Threshold ? 25
+                                                                                                                : 0;
+    HAL_ADC_Stop(&hadc);
 
     adcBatteryVoltageMonitor = xTimerCreate("adcBatteryVoltageMonitor", pdMS_TO_TICKS(600000), true, nullptr, \
 //adcTimerHook);
