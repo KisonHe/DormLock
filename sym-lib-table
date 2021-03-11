@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name DormLock-rescue)(type Legacy)(uri ${KIPRJMOD}/DormLock-rescue.lib)(options "")(descr ""))
+)
